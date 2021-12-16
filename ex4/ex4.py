@@ -19,6 +19,26 @@ models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
 # todo: extract calc acuuracy function from test and use it also for train
 
 
+
+#modelA - change 1000 to 100 in FirstNet
+#modelB - change 1000 to 100 in FirstNet and SGD to ADAM
+#modelC- droput after(!) every x in forward  (modelA):
+#         m = nn.Droput(p=0.2)   - p between 0.4 to 0.6
+#         input = torch.randn(20,16)  - x
+#         output = m(input)
+#modelD - normalization before(!) ReLU (modelA) - nn.BatchNorm1d(size of fc)
+#modelE - 
+#         self.fc0 = nn.Linear(image_size, 128)
+#         self.fc1 = nn.Linear(128, 64)
+#         self.fc2 = nn.Linear(64, 10)
+#         self.fc3 = nn.Linear(10, 10)
+#         self.fc4 = nn.Linear(10, 10)
+
+# modelF- change in modelE - ReLU to sigmoid
+
+
+    
+
 def experiments(train_loader, test_loader):
     test_transforms = transforms.Compose([
         transforms.ToTensor()])
