@@ -24,7 +24,7 @@ class Trainer:
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
             correct += pred.eq(labels.view_as(pred)).cpu().sum()
             loss = F.nll_loss(output, labels)
-            overall_loss += loss
+            overall_loss += F.nll_loss(output, labels, size_average=False).item()
             loss.backward()
             self.optimizer.step()
         len_dataset = len(self.train_loader.dataset)

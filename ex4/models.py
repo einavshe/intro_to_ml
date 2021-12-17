@@ -54,11 +54,9 @@ class ModelD1(nn.Module):
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.batch_norm(x)
-        x = F.relu(self.fc1(x))
-        x = F.batch_norm(x)
-        x = F.relu(self.fc2(x))
+        x = F.relu(F.batch_norm(self.fc0(x)))
+        x = F.relu(F.batch_norm((self.fc1(x))))
+        x = F.relu(F.batch_norm(self.fc2(x)))
         return F.log_softmax(x)
 
 
@@ -73,11 +71,9 @@ class ModelD2(nn.Module):
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
-        x = F.batch_norm(x)
-        x = F.relu(self.fc2(x))
-        x = F.batch_norm(x)
+        x = F.batch_norm(F.relu(self.fc0(x)))
+        x = F.batch_norm(F.relu(self.fc1(x)))
+        x = F.batch_norm(F.relu(self.fc2(x)))
         return F.log_softmax(x)
 
 
