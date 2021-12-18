@@ -38,7 +38,7 @@ class Trainer:
         if self.optimizer_type == "Adam":
             self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         else:
-            self.optimizer = optim.SGD(model.parameters(), lr=self.lr)
+            self.optimizer = optim.SGD(model.parameters(), lr=self.lr,momentum=0.9)
         for i in range(self.num_epochs):
             loss, accuracy = self.epoch(i, model)
             t_loss, t_accuracy = self.test(model)

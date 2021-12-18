@@ -6,8 +6,8 @@ import time
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset
-# from torchvision import transforms
-# from torchvision import datasets
+from torchvision import transforms
+from torchvision import datasets
 from trainer import Trainer
 from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF
 from plots import plot
@@ -22,23 +22,25 @@ models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
     
 
 def experiments(train_loader, test_loader):
-    # test_transforms = transforms.Compose([
-    #     transforms.ToTensor()])
-    #
-    # orig_test_loader = torch.utils.data.DataLoader(
-    #     datasets.FashionMNIST('./data', train=False, download=True,
-    #                           transform=test_transforms), batch_size=64, shuffle=False)
+    test_transforms = transforms.Compose([
+        transforms.ToTensor()])
+
+    orig_test_loader = torch.utils.data.DataLoader(
+        datasets.FashionMNIST('./data', train=False, download=True,
+                              transform=test_transforms), batch_size=64, shuffle=False)
     for i, model in enumerate(models_l):
         model_n = model.__name__
         optim_type = "SGD" if i == 0 else "Adam"
-        for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
+        # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
+        for lr in [0.01, 0.001]:
             t = Trainer(lr, optim_type, train_loader, test_loader)
             m = model(784)
             train_losses, val_losses, train_accs, val_accs = t.train(m)
-            # _, test_acc = t.test(m, orig_test_loader)
-            # print(f"{i}\t{model_n}\ttest acc:{test_acc}")
-            plot(range(10), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_losses.png")
-            plot(range(10), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_accs.png")
+            _, test_acc = t.test(m, orig_test_loader)
+            print(f"{i}\t{model_n}\ttest acc:{test_acc}")
+            plot(range(10), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
+            plot(range(10), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
+            print("lr: ", lr)
 
 
 def get_loaders(train_x, train_y):
@@ -48,9 +50,9 @@ def get_loaders(train_x, train_y):
     num_train_saples = int(0.8 * num_samples)
     train_idxs = idxs[:num_train_saples]
     test_idxs = idxs[num_train_saples:]
-    train_dataset = TensorDataset(torch.from_numpy(train_x[train_idxs]).float(),
+    train_dataset = TensorDataset(torch.from_numpy(train_x[train_idxs]/255.).float(),
                                   torch.from_numpy(train_y[train_idxs]).long(), )
-    test_dataset = TensorDataset(torch.from_numpy(train_x[test_idxs]).float(),
+    test_dataset = TensorDataset(torch.from_numpy(train_x[test_idxs]/255.).float(),
                                  torch.from_numpy(train_y[test_idxs]).long(), )
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=False)
