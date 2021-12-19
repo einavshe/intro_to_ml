@@ -21,7 +21,7 @@ models_l = [BestModel]
 # todo: extract calc acuuracy function from test and use it also for train
     
 
-def experiments(train_loader, test_loader):
+def experiments(train_loader, test_loader,x_test, out_path):
     test_transforms = transforms.Compose([
         transforms.ToTensor()])
 
@@ -42,6 +42,9 @@ def experiments(train_loader, test_loader):
             plot(range(10), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
             plot(range(10), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
             print("lr: ", lr)
+    output = m(torch.from_numpy(x_test / 255.).float())
+    preds = output.max(1, keepdim=True)[1].numpy()
+    np.savetxt(out_path, preds)
 
 
 def z_score(train):
@@ -63,11 +66,6 @@ def get_loaders(train_x, train_y):
     test_dataset = TensorDataset(torch.from_numpy(train_x[test_idxs]/255.).float(),
                                  torch.from_numpy(train_y[test_idxs]).long(), )
 
-    # train_dataset = TensorDataset(torch.from_numpy(z_score(train_x[train_idxs]/255.)).float(),
-    #                               torch.from_numpy(train_y[train_idxs]).long(), )
-    # test_dataset = TensorDataset(torch.from_numpy(z_score(train_x[test_idxs]/255.)).float(),
-    #                              torch.from_numpy(train_y[test_idxs]).long(), )
-
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=False)
     return train_loader, test_loader
@@ -79,7 +77,7 @@ def ex4(x_train, y_train, x_test, out_path):
     # # transforms.Normalize((0.1307,), (0.3081,))])
 
     train_loader, test_loader = get_loaders(x_train, y_train)
-    experiments(train_loader, test_loader)
+    experiments(train_loader, test_loader,  x_test, out_path)
 
     # todo t = Trainer(lr, optim_type, train_loader, test_loader)
     # t.train(my_best_model)
