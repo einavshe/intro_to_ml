@@ -1,15 +1,17 @@
+import copy
+
 import numpy as np
 import torch.nn.functional as F
 from torch import optim
 
 
 class Trainer:
-    def __init__(self, lr, optimizer_type, train_loader, test_loader):
+    def __init__(self, lr, optimizer_type, train_loader, test_loader, num_epochs=10):
         self.lr = lr
         self.optimizer_type = optimizer_type
         self.optimizer = None
         self.train_loader = None
-        self.num_epochs = 10
+        self.num_epochs = num_epochs
         self.train_loader = train_loader
         self.test_loader = test_loader
         pass

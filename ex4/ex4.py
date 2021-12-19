@@ -9,12 +9,12 @@ from torch.utils.data import TensorDataset
 from torchvision import transforms
 from torchvision import datasets
 from trainer import Trainer
-from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF
+from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel
 from plots import plot
 
 np.random.seed(2021)
 # models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
-models_l = [ModelF]
+models_l = [BestModel]
 
 # todo: make sure that the batch norm in model D is well implemented
 #  ( maybe we need to separate between the fc and the relu)
@@ -32,10 +32,9 @@ def experiments(train_loader, test_loader):
         model_n = model.__name__
         # optim_type = "SGD" if i == 0 else "Adam"
         optim_type = "Adam"
-        for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
-        # for lr in [0.001]:
-            t = Trainer(
-                lr, optim_type, train_loader, test_loader)
+        # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
+        for lr in [0.001]:
+            t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=40)
             m = model(784)
             train_losses, val_losses, train_accs, val_accs = t.train(m)
             _, test_acc = t.test(m, orig_test_loader)
@@ -44,16 +43,10 @@ def experiments(train_loader, test_loader):
             plot(range(10), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
             print("lr: ", lr)
 
-# def z_score(train, test):
-#     m = np.mean(train, axis = 0)
-#     dev = np.std(train, axis = 0)
-#     norma_train = (train - m)/ dev
-#     norma_test = (test - m)/dev
-#     return norma_train, norma_test
 
 def z_score(train):
-    m = np.mean(train, axis = 0)
-    dev = np.std(train, axis = 0)
+    m = np.mean(train)
+    dev = np.std(train)
     norma_train = (train - m)/ dev
     return norma_train
 
@@ -70,9 +63,9 @@ def get_loaders(train_x, train_y):
     test_dataset = TensorDataset(torch.from_numpy(train_x[test_idxs]/255.).float(),
                                  torch.from_numpy(train_y[test_idxs]).long(), )
 
-    # train_dataset = TensorDataset(torch.from_numpy(z_score(train_x[train_idxs])).float(),
+    # train_dataset = TensorDataset(torch.from_numpy(z_score(train_x[train_idxs]/255.)).float(),
     #                               torch.from_numpy(train_y[train_idxs]).long(), )
-    # test_dataset = TensorDataset(torch.from_numpy(z_score(train_x[test_idxs])).float(),
+    # test_dataset = TensorDataset(torch.from_numpy(z_score(train_x[test_idxs]/255.)).float(),
     #                              torch.from_numpy(train_y[test_idxs]).long(), )
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
