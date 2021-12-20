@@ -40,7 +40,7 @@ def experiments(train_loader, test_loader,x_test, out_path):
         model_n = model.__name__
         # optim_type = "SGD" if i == 0 else "Adam"
         optim_type = "Adam"
-        num_epochs=39
+        num_epochs=12
         # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
         for lr in [0.001]:
             t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=num_epochs)
