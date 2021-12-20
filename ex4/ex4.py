@@ -9,7 +9,7 @@ from torch.utils.data import TensorDataset
 from torchvision import transforms
 from torchvision import datasets
 from trainer import Trainer
-from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel
+from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel, BestB, BestCnn
 from plots import plot
 
 
@@ -22,7 +22,7 @@ models_params = {
 
 np.random.seed(2021)
 # models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
-models_l = [BestModel]
+models_l = [BestB]
 
 # todo: make sure that the batch norm in model D is well implemented
 #  ( maybe we need to separate between the fc and the relu)
@@ -40,7 +40,7 @@ def experiments(train_loader, test_loader,x_test, out_path):
         model_n = model.__name__
         # optim_type = "SGD" if i == 0 else "Adam"
         optim_type = "Adam"
-        num_epochs=40
+        num_epochs=39
         # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
         for lr in [0.001]:
             t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=num_epochs)
@@ -52,8 +52,15 @@ def experiments(train_loader, test_loader,x_test, out_path):
             plot(range(num_epochs), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
             print("lr: ", lr)
     output = m(torch.from_numpy(x_test / 255.).float())
-    preds = output.max(1, keepdim=True)[1].numpy()
-    np.savetxt(out_path, preds)
+    preds = output.max(1, keepdim=True)[1].int().numpy()
+    new_test_y = []
+    for i, y in enumerate(preds):
+        new_y = f"{int(y)}"
+        if i < preds.shape[0] - 1:
+            new_y = new_y + "\n"
+        new_test_y.append(new_y)
+    with open(out_path, "w") as f:
+        f.writelines(new_test_y)
 
 
 def z_score(train):
