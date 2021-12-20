@@ -6,7 +6,7 @@ from torch import optim
 
 
 class Trainer:
-    def __init__(self, lr, optimizer_type, train_loader, test_loader, num_epochs=10):
+    def __init__(self, lr, optimizer_type, train_loader, test_loader, num_epochs=10, save_path="best_model.pth"):
         self.lr = lr
         self.optimizer_type = optimizer_type
         self.optimizer = None
@@ -14,6 +14,8 @@ class Trainer:
         self.num_epochs = num_epochs
         self.train_loader = train_loader
         self.test_loader = test_loader
+        self.best_val_accuracy = 0
+        self.save_path = save_path
         pass
 
     def epoch(self, epoch_idx, model):
@@ -45,6 +47,8 @@ class Trainer:
             print(f"epoch {i}\n")
             loss, accuracy = self.epoch(i, model)
             t_loss, t_accuracy = self.test(model)
+            if t_accuracy > self.best_val_accuracy:
+                model.save_model(self.save_path)
             train_losses.append(loss)
             test_losses.append(t_loss)
             train_accs.append(accuracy)
@@ -52,6 +56,10 @@ class Trainer:
         return train_losses, test_losses, train_accs, test_accs
 
     def test(self, model, test_loader=None):
+        try:
+            model.load_model(self.save_path)
+        except Exception as e:
+            print(f"{self.save_path} doesnt exist\n{e}")
         model.eval()
         test_loss = 0
         correct = 0

@@ -143,6 +143,12 @@ class BestModel(nn.Module):
         self.fc3 = nn.Linear(256, num_cls)
         self.dropouts_p = [0.63, 0.35, 0.42]
 
+    def save_model(self, path):
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path):
+        self.load_state_dict(torch.load(path))
+
     def forward(self, x):
         x = x.view(-1, self.image_size)
 

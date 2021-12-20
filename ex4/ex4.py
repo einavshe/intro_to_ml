@@ -12,6 +12,14 @@ from trainer import Trainer
 from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel
 from plots import plot
 
+
+models_params = {
+    "ModelA": {"lr":0.01},
+    "ModelC": {"lr": 0.001, "dropouts_p": [0.3, 0.1], "Test_acc": 85},
+    "ModelD1": {"lr":0.01, "Test_acc": 87.5},
+    "ModelD2": {"lr":0.01, "Test_acc": 86.82}
+}
+
 np.random.seed(2021)
 # models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
 models_l = [BestModel]
@@ -32,15 +40,16 @@ def experiments(train_loader, test_loader,x_test, out_path):
         model_n = model.__name__
         # optim_type = "SGD" if i == 0 else "Adam"
         optim_type = "Adam"
+        num_epochs=40
         # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
         for lr in [0.001]:
-            t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=40)
+            t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=num_epochs)
             m = model(784)
             train_losses, val_losses, train_accs, val_accs = t.train(m)
             _, test_acc = t.test(m, orig_test_loader)
             print(f"{i}\t{model_n}\ttest acc:{test_acc}")
-            plot(range(10), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
-            plot(range(10), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
+            plot(range(num_epochs), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
+            plot(range(num_epochs), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
             print("lr: ", lr)
     output = m(torch.from_numpy(x_test / 255.).float())
     preds = output.max(1, keepdim=True)[1].numpy()
