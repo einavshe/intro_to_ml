@@ -46,7 +46,7 @@ def experiments(train_loader, test_loader,x_test, out_path):
             t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=num_epochs)
             m = model(784)
             train_losses, val_losses, train_accs, val_accs = t.train(m)
-            _, test_acc = t.test(m, orig_test_loader)
+            _, test_acc = t.test(m, orig_test_loader, load_best=True)
             print(f"{i}\t{model_n}\ttest acc:{test_acc}")
             plot(range(num_epochs), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
             plot(range(num_epochs), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")

@@ -55,9 +55,10 @@ class Trainer:
             test_accs.append(t_accuracy)
         return train_losses, test_losses, train_accs, test_accs
 
-    def test(self, model, test_loader=None):
+    def test(self, model, test_loader=None, load_best=False):
         try:
-            model.load_model(self.save_path)
+            if load_best:
+                model.load_model(self.save_path)
         except Exception as e:
             print(f"{self.save_path} doesnt exist\n{e}")
         model.eval()
