@@ -1,5 +1,6 @@
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import sys
 import time
 
@@ -9,7 +10,7 @@ from torch.utils.data import TensorDataset
 from torchvision import transforms
 from torchvision import datasets
 from trainer import Trainer
-from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel, BestB, BestCnn
+from models import ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF, BestModel, BestB
 from plots import plot
 
 models_params = {
@@ -19,40 +20,21 @@ models_params = {
     "ModelD2": {"lr": 0.01, "Test_acc": 86.82}
 }
 
-np.random.seed(2021)
-# models_l = [ModelAB, ModelAB, ModelC, ModelD1, ModelD2, ModelE, ModelF]
-models_l = [BestB]
-
-log_f = open("log.txt", "a")
-# todo: make sure that the batch norm in model D is well implemented
-#  ( maybe we need to separate between the fc and the relu)
-# todo: extract calc acuuracy function from test and use it also for train
-
 
 def experiments(train_loader, test_loader, x_test, out_path):
-    test_transforms = transforms.Compose([
-        transforms.ToTensor(),
-    ])
-
-    orig_test_loader = torch.utils.data.DataLoader(
-        datasets.FashionMNIST('./data', train=False, download=True,
-                              transform=test_transforms), batch_size=64, shuffle=False)
-    for i, model in enumerate(models_l):
-        model_n = model.__name__
-        log_f.write(f"\b{model_n}\n")
-        # optim_type = "SGD" if i == 0 else "Adam"
-        optim_type = "Adam"
-        num_epochs=12
-        # for lr in [2e-1, 2e-2, 2e-3, 2e-4]:
-        for lr in [0.001]:
-            t = Trainer(lr, optim_type, train_loader, test_loader,num_epochs=num_epochs)
-            m = model(784)
-            train_losses, val_losses, train_accs, val_accs = t.train(m)
-            _, test_acc = t.test(m, orig_test_loader, load_best=True)
-            print(f"{i}\t{model_n}\ttest acc:{test_acc}")
-            plot(range(num_epochs), [train_losses, val_losses],["train", "val"], "losses", f"{i}{model_n}_{lr}_losses.png")
-            plot(range(num_epochs), [train_accs, val_accs],["train", "val"], "avg accuracy", f"{i}{model_n}_{lr}_accs.png")
-            print("lr: ", lr)
+    optim_type = "Adam"
+    num_epochs = 20
+    lr = 0.001
+    m = BestModel(784)
+    t = Trainer(lr, optim_type, train_loader, test_loader, num_epochs=num_epochs)
+    train_losses, val_losses, train_accs, val_accs = t.train(m)
+    plot(range(num_epochs), [train_losses, val_losses], ["train", "val"], "losses",
+         f"BestModel_losses.png")
+    plot(range(num_epochs), [train_accs, val_accs], ["train", "val"], "avg accuracy",
+         f"BestModel_accs.png")
+    best_m_p = "best_model.pth"
+    assert os.path.exists(best_m_p), "best model checkpoint wasnt saved"
+    m.load_model(best_m_p)
     output = m(torch.from_numpy(x_test / 255.).float())
     preds = output.max(1, keepdim=True)[1].int().numpy()
     new_test_y = []
@@ -80,12 +62,11 @@ def get_loaders(train_x, train_y, batch_size=64):
     train_idxs = idxs[:num_train_saples]
     test_idxs = idxs[num_train_saples:]
     train_samples = train_x[train_idxs]
-    # train_samples = (train_samples - train_samples.mean()) / train_samples.std()
     train_samples = train_samples / train_samples.max()
 
     test_samples = train_x[test_idxs]
-    # test_samples = (test_samples - test_samples.mean()) / test_samples.std()
     test_samples = test_samples / test_samples.max()
+
     train_dataset = TensorDataset(torch.from_numpy(train_samples).float(),
                                   torch.from_numpy(train_y[train_idxs]).long(), )
     test_dataset = TensorDataset(torch.from_numpy(test_samples).float(),
@@ -97,21 +78,8 @@ def get_loaders(train_x, train_y, batch_size=64):
 
 
 def ex4(x_train, y_train, x_test, out_path):
-    # train_transforms = transforms.Compose([
-    #     transforms.ToTensor(), ])
-    # # transforms.Normalize((0.1307,), (0.3081,))])
-    for batch_size in [64, 100]:
-        np.random.seed(2021)
-        log_f.write(f"batch size {batch_size}\t")
-        train_loader, test_loader = get_loaders(x_train, y_train, batch_size=batch_size)
-        experiments(train_loader, test_loader, x_test, out_path)
-        # log_f.close()
-        # log_f = open("log.txt", "a")
-    log_f.close()
-
-    # todo t = Trainer(lr, optim_type, train_loader, test_loader)
-    # t.train(my_best_model)
-    return
+    train_loader, test_loader = get_loaders(x_train, y_train, batch_size=64)
+    experiments(train_loader, test_loader, x_test, out_path)
 
 
 def main(args):

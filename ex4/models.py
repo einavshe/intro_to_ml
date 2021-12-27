@@ -159,20 +159,18 @@ class BestModel(BaseModel):
         super(BestModel, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 1024)
+        self.fc0_bn = nn.BatchNorm1d(1024)
         self.fc1 = nn.Linear(1024, 1024)
+        self.fc1_bn = nn.BatchNorm1d(1024)
         self.fc2 = nn.Linear(1024, 256)
+        self.fc2_bn = nn.BatchNorm1d(256)
         self.fc3 = nn.Linear(256, num_cls)
-        self.dropouts_p = [0.63, 0.35, 0.42]
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
-
-        x = F.relu(self.fc0(x))
-        x = F.dropout(x, self.dropouts_p[0])
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, self.dropouts_p[1])
-        x = F.relu(self.fc2(x))
-        x = F.dropout(x, self.dropouts_p[2])
+        x = F.relu(self.fc0_bn(self.fc0(x)))
+        x = F.relu(self.fc1_bn(self.fc1(x)))
+        x = F.relu(self.fc2_bn(self.fc2(x)))
         x = self.fc3(x)
 
         return F.log_softmax(x)
