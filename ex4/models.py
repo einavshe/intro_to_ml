@@ -2,13 +2,31 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 # model A with SGD, model B with Adam
 # model C, D with Adam
 
 
-class ModelAB(nn.Module):
+class BaseModel(nn.Module):
+    def __init__(self):
+        pass
 
-    def __init__(self,image_size, num_cls=10):
+    def save_model(self, path):
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path):
+        self.load_state_dict(torch.load(path))
+
+    def init_xavier(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
+
+class ModelAB(BaseModel):
+
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(ModelAB, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 100)
@@ -23,9 +41,10 @@ class ModelAB(nn.Module):
         return F.log_softmax(x)
 
 
-class ModelC(nn.Module):
+class ModelC(BaseModel):
 
-    def __init__(self,image_size, num_cls=10, dropouts_p=[0.5, 0.1]):
+    def __init__(self, image_size, num_cls=10, dropouts_p=[0.5, 0.1]):
+        super(BaseModel, self).__init__()
         super(ModelC, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 100)
@@ -43,9 +62,10 @@ class ModelC(nn.Module):
         return F.log_softmax(x)
 
 
-class ModelD1(nn.Module):
+class ModelD1(BaseModel):
 
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(ModelD1, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 100)
@@ -55,7 +75,6 @@ class ModelD1(nn.Module):
         self.fc2 = nn.Linear(50, num_cls)
         self.fc2_bn = nn.BatchNorm1d(num_cls)
 
-
     def forward(self, x):
         x = x.view(-1, self.image_size)
         x = F.relu(self.fc0_bn(self.fc0(x)))
@@ -64,9 +83,10 @@ class ModelD1(nn.Module):
         return F.log_softmax(x)
 
 
-class ModelD2(nn.Module):
+class ModelD2(BaseModel):
 
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(ModelD2, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 100)
@@ -84,9 +104,10 @@ class ModelD2(nn.Module):
         return F.log_softmax(x)
 
 
-class ModelE(nn.Module):
+class ModelE(BaseModel):
 
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(ModelE, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 128)
@@ -107,9 +128,10 @@ class ModelE(nn.Module):
         return F.log_softmax(x)
 
 
-class ModelF(nn.Module):
+class ModelF(BaseModel):
 
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(ModelF, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 128)
@@ -130,11 +152,10 @@ class ModelF(nn.Module):
         return F.log_softmax(x)
 
 
+class BestModel(BaseModel):
 
-
-class BestModel(nn.Module):
-
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(BestModel, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 1024)
@@ -142,12 +163,6 @@ class BestModel(nn.Module):
         self.fc2 = nn.Linear(1024, 256)
         self.fc3 = nn.Linear(256, num_cls)
         self.dropouts_p = [0.63, 0.35, 0.42]
-
-    def save_model(self, path):
-        torch.save(self.state_dict(), path)
-
-    def load_model(self, path):
-        self.load_state_dict(torch.load(path))
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
@@ -163,11 +178,10 @@ class BestModel(nn.Module):
         return F.log_softmax(x)
 
 
+class BestB(BaseModel):
 
-
-class BestB(nn.Module):
-
-    def __init__(self,image_size, num_cls=10):
+    def __init__(self, image_size, num_cls=10):
+        super(BaseModel, self).__init__()
         super(BestB, self).__init__()
         self.image_size = image_size
         self.fc0 = nn.Linear(image_size, 256)
@@ -176,13 +190,8 @@ class BestB(nn.Module):
         self.fc1_bn = nn.BatchNorm1d(100)
         self.fc2 = nn.Linear(100, 50)
         self.fc2_bn = nn.BatchNorm1d(50)
-        self.fc3= nn.Linear(50, num_cls)
-
-    def save_model(self, path):
-        torch.save(self.state_dict(), path)
-
-    def load_model(self, path):
-        self.load_state_dict(torch.load(path))
+        self.fc3 = nn.Linear(50, num_cls)
+        self.init_xavier()
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
@@ -193,53 +202,4 @@ class BestB(nn.Module):
         return F.log_softmax(x)
 
 
-class BestCnn(nn.Module):
-
-    def __init__(self,image_size, num_cls=10):
-        super(BestCnn, self).__init__()
-
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5)
-        self.conv2 = nn.Conv2d(in_channels=6, out_channels=12, kernel_size=5)
-
-        self.fc1 = nn.Linear(in_features=12 * 4 * 4, out_features=120)
-        self.fc2 = nn.Linear(in_features=120, out_features=60)
-        self.out = nn.Linear(in_features=60, out_features=10)
-
-
-
-    def save_model(self, path):
-        torch.save(self.state_dict(), path)
-
-    def load_model(self, path):
-        self.load_state_dict(torch.load(path))
-
-    def forward(self, x):
-        x = x.view((x.size()[0],1,28,28))
-        # conv 1
-        t = self.conv1(x)
-        t = F.relu(t)
-        t = F.max_pool2d(t, kernel_size=2, stride=2)
-
-        # conv 2
-        t = self.conv2(t)
-        t = F.relu(t)
-        t = F.max_pool2d(t, kernel_size=2, stride=2)
-
-        # fc1
-        t = t.reshape(-1, 12 * 4 * 4)
-        t = self.fc1(t)
-        t = F.relu(t)
-
-        # fc2
-        t = self.fc2(t)
-        t = F.relu(t)
-
-        # output
-        t = self.out(t)
-        # don't need softmax here since we'll use cross-entropy as activation.
-
-        return F.log_softmax(t)
-
-
-
-model = ModelAB(image_size=28*28)
+model = ModelAB(image_size=28 * 28)

@@ -49,6 +49,7 @@ class Trainer:
             t_loss, t_accuracy = self.test(model)
             if t_accuracy > self.best_val_accuracy:
                 model.save_model(self.save_path)
+                self.best_val_accuracy = t_accuracy
             train_losses.append(loss)
             test_losses.append(t_loss)
             train_accs.append(accuracy)
@@ -74,7 +75,7 @@ class Trainer:
             correct += pred.eq(target.view_as(pred)).cpu().sum()
         test_loss /= len_dataset
         accuracy = 100. * correct / len_dataset
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {} / {}({:.0f} % )\n'.format(
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {} / {}({:.2f} % )\n'.format(
             test_loss, correct, len_dataset,
             accuracy))
         return test_loss, accuracy
