@@ -1,6 +1,6 @@
 import os
 
-from intro_to_ml.ex5.models import M5
+from models import M5
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import sys
@@ -66,13 +66,13 @@ def get_loaders(batch_size=100):
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,
-        num_workers=20, pin_memory=True, sampler=None)
+        num_workers=1, pin_memory=True, sampler=None)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=batch_size, shuffle=False,
-        num_workers=20, pin_memory=True, sampler=None)
+        num_workers=1, pin_memory=True, sampler=None)
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False,
-        num_workers=20, pin_memory=True, sampler=None)
+        num_workers=1, pin_memory=True, sampler=None)
 
     return train_loader, val_loader, test_loader
 
