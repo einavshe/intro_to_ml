@@ -35,9 +35,9 @@ class M5(BaseModel):
         self.conv3 = nn.Conv2d(n_channel, 2 * n_channel, kernel_size=3)
         self.bn3 = nn.BatchNorm2d(2 * n_channel)
         self.pool3 = nn.MaxPool2d(2)
-        self.conv4 = nn.Conv2d(2 * n_channel, 2 * n_channel, kernel_size=3)
-        self.bn4 = nn.BatchNorm2d(2 * n_channel)
-        self.pool4 = nn.MaxPool2d(2)
+        self.conv4 = nn.Conv2d(2 * n_channel, n_channel, kernel_size=3)
+        self.bn4 = nn.BatchNorm2d(n_channel)
+        self.pool4 = nn.MaxPool2d(4)
         self.fc1 = nn.Linear(2 * n_channel, n_output)
 
     def forward(self, x):
@@ -54,9 +54,9 @@ class M5(BaseModel):
         x = F.relu(self.bn4(x))
         x = self.pool4(x)
         x = F.avg_pool2d(x, x.shape[-1])
-        x = x.permute(0, 3, 2, 1)
+        x = x.reshape(-1, x.shape[1] * x.shape[2] * x.shape[3])
         x = self.fc1(x)
-        return F.log_softmax(x, dim=2)
+        return F.log_softmax(x, dim=1)
 
 
 class ModelAB(BaseModel):
