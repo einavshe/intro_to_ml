@@ -44,7 +44,7 @@ def experiments(train_loader, val_loader, test_loader):
     new_test_y = []
     for i, y in enumerate(preds):
         new_y = f"{int(y)}"
-        if i < preds.shape[0] - 1:
+        if i < len(preds) - 1:
             new_y = new_y + "\n"
         new_test_y.append(new_y)
     with open("test_y", "w") as f:

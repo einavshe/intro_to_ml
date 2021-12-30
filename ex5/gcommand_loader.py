@@ -54,9 +54,9 @@ def make_dataset(dir, class_to_idx):
 def make_test_dataset(dir):
     spects = []
     dir = os.path.expanduser(dir)
-    for path in sorted(os.listdir(dir)):
-        if is_audio_file(path):
-             spects.append(path)
+    for fname in sorted(os.listdir(dir)):
+        if is_audio_file(fname):
+             spects.append(os.path.join(dir, fname))
     return spects
 
 

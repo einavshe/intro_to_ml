@@ -100,7 +100,7 @@ class Trainer:
             test_loss += F.nll_loss(output, target, size_average=False).item()  # sum up batch loss
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).cpu().sum()
-            preds.extend(list(pred.numpy()))
+            preds.extend(list(pred.squeeze().numpy()))
         test_loss /= len_dataset
         accuracy = 100. * correct / len_dataset
         print('\nTest set: Average loss: {:.4f}, Accuracy: {} / {}({:.2f} % )\n'.format(
