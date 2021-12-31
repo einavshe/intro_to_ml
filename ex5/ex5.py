@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from models import M5
 
@@ -42,10 +43,12 @@ def experiments(train_loader, val_loader, test_loader):
 
     preds = t.inference(m, test_loader)
     new_test_y = []
-    for i, y in enumerate(preds):
-        new_y = f"{int(y)}"
+    classes = train_loader.dataset.classes
+    files_names = [Path(path).name for path in test_loader.dataset.spects]
+    for i, (f_name, y) in enumerate(zip(files_names, preds)):
+        new_y = f"{f_name},{classes[int(y)]}"
         if i < len(preds) - 1:
-            new_y = new_y + "\n"
+            new_y = f"{new_y}\n"
         new_test_y.append(new_y)
     with open("test_y", "w") as f:
         f.writelines(new_test_y)
