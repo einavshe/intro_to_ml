@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from models import M5
+from models import BestModel
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import sys
@@ -25,17 +25,19 @@ hyper_params_dict = {
     "gamma": 0.1,
 }
 
+
 def experiments(train_loader, val_loader, test_loader):
-    with open("log.txt", "w") as log_f:
-        for num_epochs in [10, 20, 50]:
-            for lr in [1e-2, 1e-3, 1e-4]:
+    with open("log.txt", "a") as log_f:
+        for num_epochs in [15]:#0, 20, 50]:
+            for lr in [1e-2]:#, 1e-3, 1e-4]:
                 print(lr, num_epochs)
-                m = M5(n_input=1, n_output=30)
-                t = Trainer(train_loader, val_loader, hyperparams_dict={"lr": lr, "num_epochs": num_epochs},
-                        save_path=f"{num_epochs}_{lr}_best_model.pth")
+                m = BestModel(n_input=1, n_output=30)
+                step_size = 10
+                t = Trainer(train_loader, val_loader, hyperparams_dict={"lr": lr, "num_epochs": num_epochs, "step_size":step_size},
+                        save_path=f"{num_epochs}_{lr}_{step_size}_best_model.pth")
                 train_losses, val_losses, train_accs, val_accs = t.train(m)
-                log_f.write(f"lr: {lr},\tnum_e: {num_epochs},\tbest_acc: {t.best_val_accuracy}\n")
-                plot_n = f"lr_{lr}_nume_{num_epochs}"
+                log_f.write(f"lr: {lr},\tnum_e: {num_epochs},\tstep_s: {step_size},\tbest_acc: {t.best_val_accuracy}\n")
+                plot_n = f"lr_{lr}_nume_{num_epochs}_step_s_{step_size}"
                 plot(range(num_epochs), [train_losses, val_losses], ["train", "val"], "losses",
                      plot_n+"_loss.png")
                 plot(range(num_epochs), [train_accs, val_accs], ["train", "val"], "avg accuracy",
@@ -54,18 +56,10 @@ def experiments(train_loader, val_loader, test_loader):
         f.writelines(new_test_y)
 
 
-def z_score(train):
-    m = np.mean(train)
-    dev = np.std(train)
-    norma_train = (train - m) / dev
-    return norma_train
-
-
-def get_loaders(batch_size=100):
-    data_p = './mini_data/'
-    train_dataset = GCommandLoader(data_p + 'train')
-    val_dataset = GCommandLoader(data_p + 'valid')
-    test_dataset = GCommandLoader(data_p + 'test', train=False)
+def get_loaders(data_p, batch_size=100):
+    train_dataset = GCommandLoader(os.path.join(data_p, 'train'))
+    val_dataset = GCommandLoader(os.path.join(data_p,  'valid'))
+    test_dataset = GCommandLoader(os.path.join(data_p, 'test'), train=False)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,
@@ -80,10 +74,11 @@ def get_loaders(batch_size=100):
     return train_loader, val_loader, test_loader
 
 
-def ex5():
-    train_loader, val_loader,test_loader = get_loaders(batch_size=100)
+def ex5(args):
+    data_p = args[0] #'./data/'
+    train_loader, val_loader,test_loader = get_loaders(data_p=data_p, batch_size=100)
     experiments(train_loader, val_loader, test_loader)
 
 
 if __name__ == "__main__":
-    ex5()
+    ex5(sys.argv[1:])
